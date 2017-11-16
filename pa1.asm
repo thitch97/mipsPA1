@@ -61,7 +61,7 @@ find_length:
 
 end_find_length:	
 	
-	la $a0, ($t0) 			#Reset $t0 to the string address
+	add $t0, $zero, $a0  			#Reset $t0 to the string address
 	addi $t5, $zero, 0		
 	
 loop:
@@ -70,8 +70,8 @@ loop:
 	subu $t6, $t4, $t5
 	addi $t6, $t6, -1
 	
-	beq $t2, 10, end_loop
-	beqz $t2, end_loop
+	beq $t2, 10, pass
+	beqz $t2, pass
 	
 lower_upper_bound:
 	blt $t2, 103, lower_lower_bound
@@ -83,11 +83,13 @@ lower_lower_bound:
 
 store_low_val:
 	addi $t3, $t2, -87
-	multu $t6, $s2
+	multu $t6, $s1			# Multiply 
 	mflo $t8
-	sllv $t3, $t3, $t8
-	add $s0, $s0, $t3
-	j increment
+	sllv $t9, $t3, $t8
+	add $s0, $s0, $t9
+	addi $t0, $t0, 1
+	j loop
+
 
 upper_upper_bound:
 	blt $t2, 71, upper_lower_bound
@@ -99,11 +101,15 @@ upper_lower_bound:
 
 store_up_val:
 	addi $t3, $t2, -55
-	multu $t6, $s2
+	multu $t6, $s1
 	mflo $t8
-	sllv $t3, $t3, $t8
-	add $s0, $s0, $t3
-	j increment
+	sllv $t9, $t3, $t8
+	add $s0, $s0, $t9
+	addi $t0, $t0, 1
+	
+	j loop
+
+
 
 num_upper_bound:
 	blt $t2, 58, num_lower_bound
@@ -115,19 +121,23 @@ num_lower_bound:
 
 store_num_val: 
 	addi $t3, $t2, -48
-	multu $t6, $s2
+	multu $t6, $s1
 	mflo $t8
-	sllv $t3, $t3, $t8
-	add $s0, $s0, $t3
-	j increment
-
-increment:
-	addi $t7, $zero, 1
+	sllv $t9, $t3, $t8
+	add $s0, $s0, $t9
+	addi $t0, $t0, 1
 	
+	j loop
+		
 end:
 	li $v0, 10
 	syscall
-
+	
+pass:
+	add $a0, $zero, $s0
+	li $v0, 36
+	syscall
+	j end
 fail:
 	la $a0, error
 	li $v0, 4
