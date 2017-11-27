@@ -62,13 +62,13 @@ find_length:
 end_find_length:	
 	
 	add $t0, $zero, $a0  			#Reset $t0 to the string address
-	add $t5, $zero, $t4	
+	addi $t5, $zero, 0		
 	
 loop:
 	lb $t2, 0($t0)
 	
 	subu $t6, $t4, $t5
-	#addi $t6, $t6, -1
+	addi $t6, $t6, -1
 	
 	beq $t2, 10, pass
 	beqz $t2, pass
@@ -85,10 +85,9 @@ store_low_val:
 	addi $t3, $t2, -87
 	multu $t6, $s1			# Multiply 
 	mflo $t8
-	sllv $s0, $s0, $s1
-	add $s0, $t3, $s0
+	sllv $t9, $t3, $t8
+	add $s0, $s0, $t9
 	addi $t0, $t0, 1
-	addi $t5, $t5, -1
 	j loop
 
 
@@ -104,12 +103,13 @@ store_up_val:
 	addi $t3, $t2, -55
 	multu $t6, $s1
 	mflo $t8
-	sllv $s0, $s0, $s1
-	add $s0, $t3, $s0
+	sllv $t9, $t3, $t8
+	add $s0, $s0, $t9
 	addi $t0, $t0, 1
-	addi $t5, $t5, -1
 	
 	j loop
+
+
 
 num_upper_bound:
 	blt $t2, 58, num_lower_bound
@@ -123,8 +123,8 @@ store_num_val:
 	addi $t3, $t2, -48
 	multu $t6, $s1
 	mflo $t8
-	sllv $s0, $s0, $s1
-	add $s0, $t3, $s0
+	sllv $t9, $t3, $t8
+	add $s0, $s0, $t9
 	addi $t0, $t0, 1
 	
 	j loop
