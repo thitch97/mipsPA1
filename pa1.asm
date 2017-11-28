@@ -37,6 +37,7 @@
 main:
 	addi $s1, $zero, 4
 	addi $s0, $zero, 0
+	addi $s2, $zero, 10000
  	
 	la $a0, input		# load the input into the syscall parameter
 	li $a1, 9		# allocate the space for the input string	
@@ -51,8 +52,10 @@ main:
 find_length:
 
 	lb $t2, 0($t0)			#load the first character of the string in to $t2
+	beq $t2, 32, space_check	#If the char is equal to a space, check if we are within a string
 	beqz $t2, end_find_length	#If the char is equal to 0, end the loop
 	beq $t2, 10, end_find_length	# If the char is equal to a newline, end the loop
+		
 	
 	addi $t4, $t4, 1 		#Increment the counter	
 	addi $t0, $t0, 1		#Move to the next character
@@ -63,13 +66,11 @@ end_find_length:
 	
 	add $t0, $zero, $a0  			#Reset $t0 to the string address
 	add $t5, $zero, $t4	
-	
+
 loop:
 	lb $t2, 0($t0)
-	
-	subu $t6, $t4, $t5
-	#addi $t6, $t6, -1
-	
+		
+	beq $t2, 32, store_space
 	beq $t2, 10, pass
 	beqz $t2, pass
 	
@@ -83,12 +84,10 @@ lower_lower_bound:
 
 store_low_val:
 	addi $t3, $t2, -87
-	multu $t6, $s1			# Multiply 
-	mflo $t8
 	sllv $s0, $s0, $s1
 	add $s0, $t3, $s0
 	addi $t0, $t0, 1
-	addi $t5, $t5, -1
+
 	j loop
 
 
@@ -102,8 +101,6 @@ upper_lower_bound:
 
 store_up_val:
 	addi $t3, $t2, -55
-	multu $t6, $s1
-	mflo $t8
 	sllv $s0, $s0, $s1
 	add $s0, $t3, $s0
 	addi $t0, $t0, 1
@@ -121,8 +118,6 @@ num_lower_bound:
 
 store_num_val: 
 	addi $t3, $t2, -48
-	multu $t6, $s1
-	mflo $t8
 	sllv $s0, $s0, $s1
 	add $s0, $t3, $s0
 	addi $t0, $t0, 1
@@ -133,17 +128,40 @@ end:
 	li $v0, 10
 	syscall
 	
+	
 pass:
-	add $a0, $zero, $s0
-	li $v0, 36
+	div $s0, $s2
+	mfhi $a0
+	mflo $a1
+	li $v0, 1
 	syscall
 	j end
+	
 fail:
-	la $a0, error
 	li $v0, 4
+	la $a0, error
 	syscall
 	j end
+	
+space_check:
+	
+	add $t8, $zero, $t0
+	addi $t8, $t8, -1
+	lb $t9, 0($t8)
+	beq $t9, 32, to_cont
+	beq $t9, 0, to_cont
+	
+	
+	j fail
+	
+to_cont:
+	addi $t4, $t4, 1
+	addi $t0, $t0, 1
+	j find_length
 
+store_space:
+	addi $t0, $t0, 1
+	j loop
 
 
  
